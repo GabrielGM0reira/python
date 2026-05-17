@@ -13,20 +13,35 @@ connector.execute(
 )
 connector.commit()
 
-# Backgrounds and Fonts
-dataentery_frame_bg = '#7A00D7'
-buttons_frame_bg = '#6B21A3'
-hlb_btn_bg = '#532D70'
-lbl_font = ('Georgia', 13)
-entry_font = 'Times 13 bold'
-btn_font = ('Gill Sans MT', 13)
+# Modern Color Scheme
+PRIMARY_COLOR = '#1e3a8a'        # Dark Blue
+SECONDARY_COLOR = '#3b82f6'      # Bright Blue
+ACCENT_COLOR = '#10b981'         # Green
+LIGHT_BG = '#f8fafc'             # Light gray
+DARK_TEXT = '#1e293b'            # Dark text
+BORDER_COLOR = '#e2e8f0'         # Light border
+WARNING_COLOR = '#ef4444'        # Red
+
+# Fonts
+title_font = ('Segoe UI', 18, 'bold')
+header_font = ('Segoe UI', 12, 'bold')
+label_font = ('Segoe UI', 11)
+entry_font = ('Segoe UI', 11)
+btn_font = ('Segoe UI', 11, 'bold')
+small_font = ('Segoe UI', 9)
 
 # Initializing the GUI window
 root = Tk()
-root.title('PythonGeeks Expense Tracker')
-root.geometry('1200x550')
+root.title('💰 Smart Expense Tracker')
+root.geometry('1300x700')
 root.resizable(0, 0)
-Label(root, text='EXPENSE TRACKER', font=('Noto Sans CJK TC', 15, 'bold'), bg=hlb_btn_bg).pack(side=TOP, fill=X)
+root.configure(bg=LIGHT_BG)
+
+# Custom title bar
+title_frame = Frame(root, bg=PRIMARY_COLOR, height=60)
+title_frame.pack(side=TOP, fill=X)
+Label(title_frame, text='💰 Smart Expense Tracker', font=title_font, bg=PRIMARY_COLOR, 
+      fg='white', pady=15).pack(side=LEFT, padx=20)
 
 # StringVar and DoubleVar variables
 desc = StringVar()
@@ -34,15 +49,7 @@ amnt = DoubleVar()
 payee = StringVar()
 MoP = StringVar(value='Cash')
 
-# Frames
-data_entry_frame = Frame(root, bg=dataentery_frame_bg)
-data_entry_frame.place(x=0, y=30, relheight=0.95, relwidth=0.25)
-buttons_frame = Frame(root, bg=buttons_frame_bg)
-buttons_frame.place(relx=0.25, rely=0.05, relwidth=0.75, relheight=0.21)
-tree_frame = Frame(root)
-tree_frame.place(relx=0.25, rely=0.26, relwidth=0.75, relheight=0.74)
-
-# ===== FUNCTIONS =====
+# ===== FUNCTION DEFINITIONS =====
 def list_all_expenses():
   global connector, table
   table.delete(*table.get_children())
@@ -127,9 +134,10 @@ def edit_expense():
      mb.showerror('No expense selected!', 'You have not selected any expense in the table for us to edit; please do that!')
      return
   view_expense_details()
-  edit_btn = Button(data_entry_frame, text='Edit expense', font=btn_font, width=30,
-                    bg=hlb_btn_bg, command=edit_existing_expense)
-  edit_btn.place(x=10, y=395)
+  edit_btn = Button(left_panel, text='💾 Save Changes', font=btn_font,
+                    bg='#059669', fg='white', relief=FLAT, bd=0, cursor='hand2',
+                    activebackground='#059669', command=edit_existing_expense)
+  edit_btn.pack(fill=X, pady=5)
 
 def selected_expense_to_words():
   global table
@@ -153,54 +161,153 @@ def expense_to_words_before_adding():
   else:
      mb.showinfo('Ok', 'Please take your time to add this record')
 
-# ===== END FUNCTIONS =====
+def create_styled_button(parent, text, command, bg_color, fg_color='white', icon=''):
+    btn = Button(parent, text=icon + ' ' + text, command=command, font=btn_font, 
+                 bg=bg_color, fg=fg_color, relief=FLAT, bd=0, cursor='hand2',
+                 activebackground=bg_color, activeforeground=fg_color, padx=15, pady=10)
+    return btn
 
-Label(data_entry_frame, text='Date (M/DD/YY) :', font=lbl_font, bg=dataentery_frame_bg).place(x=10, y=50)
-date = DateEntry(data_entry_frame, date=datetime.datetime.now().date(), font=entry_font)
-date.place(x=160, y=50)
-Label(data_entry_frame, text='Payee\t             :', font=lbl_font, bg=dataentery_frame_bg).place(x=10, y=230)
-Entry(data_entry_frame, font=entry_font, width=31, textvariable=payee).place(x=10, y=260)
-Label(data_entry_frame, text='Description           :', font=lbl_font, bg=dataentery_frame_bg).place(x=10, y=100)
-Entry(data_entry_frame, font=entry_font, width=31, textvariable=desc).place(x=10, y=130)
-Label(data_entry_frame, text='Amount\t             :', font=lbl_font, bg=dataentery_frame_bg).place(x=10, y=180)
-Entry(data_entry_frame, font=entry_font, width=14, textvariable=amnt).place(x=160, y=180)
-Label(data_entry_frame, text='Mode of Payment:', font=lbl_font, bg=dataentery_frame_bg).place(x=10, y=310)
-dd1 = OptionMenu(data_entry_frame, MoP, *['Cash', 'Cheque', 'Credit Card', 'Debit Card', 'Paytm', 'Google Pay', 'Razorpay'])
-dd1.place(x=160, y=305)     ;     dd1.configure(width=10, font=entry_font)
-Button(data_entry_frame, text='Add expense', command=add_another_expense, font=btn_font, width=30,
-      bg=hlb_btn_bg).place(x=10, y=395)
-Button(data_entry_frame, text='Convert to words before adding', command=expense_to_words_before_adding, font=btn_font, width=30, bg=hlb_btn_bg).place(x=10,y=450)
-# Buttons' Frame
-Button(buttons_frame, text='Delete Expense', font=btn_font, width=25, bg=hlb_btn_bg, command=remove_expense).place(x=30, y=5)
-Button(buttons_frame, text='Clear Fields in DataEntry Frame', font=btn_font, width=25, bg=hlb_btn_bg,
-      command=clear_fields).place(x=335, y=5)
-Button(buttons_frame, text='Delete All Expenses', font=btn_font, width=25, bg=hlb_btn_bg, command=remove_all_expenses).place(x=640, y=5)
-Button(buttons_frame, text='View Selected Expense\'s Details', font=btn_font, width=25, bg=hlb_btn_bg,
-      command=view_expense_details).place(x=30, y=65)
-Button(buttons_frame, text='Edit Selected Expense', command=edit_expense, font=btn_font, width=25, bg=hlb_btn_bg).place(x=335,y=65)
-Button(buttons_frame, text='Convert Expense to a sentence', font=btn_font, width=25, bg=hlb_btn_bg,
-      command=selected_expense_to_words).place(x=640, y=65)
+# ===== END FUNCTION DEFINITIONS =====
+
+# Main container frame
+main_container = Frame(root, bg=LIGHT_BG)
+main_container.pack(fill=BOTH, expand=True, padx=0, pady=0)
+
+# Left Panel - Data Entry
+left_panel = Frame(main_container, bg='white', relief=FLAT)
+left_panel.pack(side=LEFT, fill=BOTH, padx=15, pady=15, expand=False)
+
+# Title for left panel
+entry_title = Label(left_panel, text='📝 New Expense', font=header_font, bg='white', fg=PRIMARY_COLOR)
+entry_title.pack(pady=(0, 20))
+
+# Date frame
+date_frame = Frame(left_panel, bg='white')
+date_frame.pack(fill=X, pady=8)
+Label(date_frame, text='📅 Date', font=label_font, bg='white', fg=DARK_TEXT).pack(anchor=W)
+date = DateEntry(date_frame, date=datetime.datetime.now().date(), font=entry_font, 
+                 foreground=DARK_TEXT, background=SECONDARY_COLOR, headersforeground='white',
+                 normalforeground=DARK_TEXT, weekendforeground=DARK_TEXT)
+date.pack(fill=X, pady=(5, 0))
+
+# Description frame
+desc_frame = Frame(left_panel, bg='white')
+desc_frame.pack(fill=X, pady=8)
+Label(desc_frame, text='📋 Description', font=label_font, bg='white', fg=DARK_TEXT).pack(anchor=W)
+desc_entry = Entry(desc_frame, font=entry_font, textvariable=desc, relief=FLAT, bd=0, 
+                   bg='#f1f5f9', fg=DARK_TEXT, insertbackground=SECONDARY_COLOR)
+desc_entry.pack(fill=X, pady=(5, 0), ipady=8, padx=8)
+desc_entry.configure(highlightbackground=BORDER_COLOR, highlightthickness=1)
+
+# Payee frame
+payee_frame = Frame(left_panel, bg='white')
+payee_frame.pack(fill=X, pady=8)
+Label(payee_frame, text='👤 Payee', font=label_font, bg='white', fg=DARK_TEXT).pack(anchor=W)
+payee_entry = Entry(payee_frame, font=entry_font, textvariable=payee, relief=FLAT, bd=0,
+                    bg='#f1f5f9', fg=DARK_TEXT, insertbackground=SECONDARY_COLOR)
+payee_entry.pack(fill=X, pady=(5, 0), ipady=8, padx=8)
+payee_entry.configure(highlightbackground=BORDER_COLOR, highlightthickness=1)
+
+# Amount frame
+amount_frame = Frame(left_panel, bg='white')
+amount_frame.pack(fill=X, pady=8)
+Label(amount_frame, text='💵 Amount', font=label_font, bg='white', fg=DARK_TEXT).pack(anchor=W)
+amount_entry = Entry(amount_frame, font=entry_font, textvariable=amnt, relief=FLAT, bd=0,
+                     bg='#f1f5f9', fg=DARK_TEXT, insertbackground=SECONDARY_COLOR, width=15)
+amount_entry.pack(fill=X, pady=(5, 0), ipady=8, padx=8)
+amount_entry.configure(highlightbackground=BORDER_COLOR, highlightthickness=1)
+
+# Mode of Payment frame
+mop_frame = Frame(left_panel, bg='white')
+mop_frame.pack(fill=X, pady=8)
+Label(mop_frame, text='💳 Payment Method', font=label_font, bg='white', fg=DARK_TEXT).pack(anchor=W)
+dd1 = OptionMenu(mop_frame, MoP, *['Cash', 'Cheque', 'Credit Card', 'Debit Card', 'Paytm', 'Google Pay', 'Razorpay'])
+dd1.pack(fill=X, pady=(5, 0), padx=8)
+dd1.configure(font=entry_font, bg='#f1f5f9', fg=DARK_TEXT, relief=FLAT, bd=0, 
+              highlightbackground=BORDER_COLOR, highlightthickness=1)
+
+# Separator
+ttk.Separator(left_panel, orient=HORIZONTAL).pack(fill=X, pady=15)
+
+# Action buttons for left panel
+add_btn = create_styled_button(left_panel, 'Add Expense', add_another_expense, ACCENT_COLOR, 'white', '➕')
+add_btn.pack(fill=X, pady=5)
+
+convert_btn = create_styled_button(left_panel, 'Preview Before Adding', expense_to_words_before_adding, SECONDARY_COLOR, 'white', '👁️')
+convert_btn.pack(fill=X, pady=5)
+
+clear_btn = create_styled_button(left_panel, 'Clear Fields', clear_fields, '#64748b', 'white', '🗑️')
+clear_btn.pack(fill=X, pady=5)
+
+# Right Panel - Data Display
+right_panel = Frame(main_container, bg=LIGHT_BG)
+right_panel.pack(side=RIGHT, fill=BOTH, expand=True, padx=0, pady=15)
+
+# Buttons frame at top of right panel
+buttons_frame = Frame(right_panel, bg='white', relief=FLAT)
+buttons_frame.pack(fill=X, padx=15, pady=(0, 15))
+
+# Row 1 of buttons
+row1_frame = Frame(buttons_frame, bg='white')
+row1_frame.pack(fill=X, pady=5)
+create_styled_button(row1_frame, 'View Details', view_expense_details, SECONDARY_COLOR).pack(side=LEFT, padx=5)
+create_styled_button(row1_frame, 'Edit Expense', edit_expense, PRIMARY_COLOR).pack(side=LEFT, padx=5)
+create_styled_button(row1_frame, 'Read as Text', selected_expense_to_words, '#7c3aed').pack(side=LEFT, padx=5)
+
+# Row 2 of buttons
+row2_frame = Frame(buttons_frame, bg='white')
+row2_frame.pack(fill=X, pady=5)
+create_styled_button(row2_frame, 'Delete Selected', remove_expense, '#f97316').pack(side=LEFT, padx=5)
+create_styled_button(row2_frame, 'Delete All', remove_all_expenses, WARNING_COLOR).pack(side=LEFT, padx=5)
+
+# Table frame
+tree_frame = Frame(right_panel, bg='white', relief=FLAT)
+tree_frame.pack(fill=BOTH, expand=True, padx=15)
+
+# Configure Treeview Style
+style = ttk.Style()
+style.theme_use('clam')
+style.configure('Treeview', 
+                font=(entry_font[0], 10),
+                rowheight=25,
+                background='#f8fafc',
+                fieldbackground='#f8fafc',
+                foreground=DARK_TEXT)
+style.configure('Treeview.Heading', 
+                font=(label_font[0], 11, 'bold'),
+                background=PRIMARY_COLOR,
+                foreground='white')
+style.map('Treeview', 
+          background=[('selected', SECONDARY_COLOR)],
+          foreground=[('selected', 'white')])
+
 # Treeview Frame
-table = ttk.Treeview(tree_frame, selectmode=BROWSE, columns=('ID', 'Date', 'Payee', 'Description', 'Amount', 'Mode of Payment'))
-X_Scroller = Scrollbar(table, orient=HORIZONTAL, command=table.xview)
-Y_Scroller = Scrollbar(table, orient=VERTICAL, command=table.yview)
+table = ttk.Treeview(tree_frame, selectmode=BROWSE, columns=('ID', 'Date', 'Payee', 'Description', 'Amount', 'Mode of Payment'), height=15)
+X_Scroller = Scrollbar(tree_frame, orient=HORIZONTAL, command=table.xview)
+Y_Scroller = Scrollbar(tree_frame, orient=VERTICAL, command=table.yview)
 X_Scroller.pack(side=BOTTOM, fill=X)
 Y_Scroller.pack(side=RIGHT, fill=Y)
 table.config(yscrollcommand=Y_Scroller.set, xscrollcommand=X_Scroller.set)
-table.heading('ID', text='S No.', anchor=CENTER)
-table.heading('Date', text='Date', anchor=CENTER)
-table.heading('Payee', text='Payee', anchor=CENTER)
-table.heading('Description', text='Description', anchor=CENTER)
-table.heading('Amount', text='Amount', anchor=CENTER)
-table.heading('Mode of Payment', text='Mode of Payment', anchor=CENTER)
+
+# Configure column headings
+table.heading('#0', text='')
+table.heading('ID', text='ID')
+table.heading('Date', text='📅 Date')
+table.heading('Payee', text='👤 Payee')
+table.heading('Description', text='📋 Description')
+table.heading('Amount', text='💵 Amount')
+table.heading('Mode of Payment', text='💳 Payment')
+
+# Configure column widths
 table.column('#0', width=0, stretch=NO)
-table.column('#1', width=50, stretch=NO)
-table.column('#2', width=95, stretch=NO)  # Date column
-table.column('#3', width=150, stretch=NO)  # Payee column
-table.column('#4', width=325, stretch=NO)  # Title column
-table.column('#5', width=135, stretch=NO)  # Amount column
-table.column('#6', width=125, stretch=NO)  # Mode of Payment column
-table.place(relx=0, y=0, relheight=1, relwidth=1)
+table.column('ID', width=40, anchor=CENTER)
+table.column('Date', width=100, anchor=CENTER)
+table.column('Payee', width=120, anchor=W)
+table.column('Description', width=300, anchor=W)
+table.column('Amount', width=100, anchor=E)
+table.column('Mode of Payment', width=120, anchor=CENTER)
+
+table.pack(fill=BOTH, expand=True)
 list_all_expenses()
 # Finalizing the GUI window
 root.update()
