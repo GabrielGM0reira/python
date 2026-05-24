@@ -1,6 +1,11 @@
 import string
 import random
 import re
+from password_database import (
+    initialize_database, save_password, get_all_passwords,
+    delete_password, update_password, display_saved_passwords,
+    view_password, get_password_by_name, clear_all_passwords
+)
 
 # Common weak passwords to check against
 WEAK_PASSWORDS = [
@@ -145,82 +150,139 @@ def generate_secure_password(length):
     return ''.join(password)
 
 # Main program
+initialize_database()
+
 print("\n" + "=" * 60)
 print("🔑 PASSWORD GENERATOR & SECURITY CHECKER")
 print("=" * 60)
 
-# Getting password length
+print(f'\n📋 Main Menu:')
+print(f'   1. Generate & Check Password')
+print(f'   2. View Saved Passwords')
+print(f'   3. Search Password by Name')
+print(f'   4. Delete Password')
+print(f'   5. Clear All Passwords')
+print(f'   6. Exit')
+
+# Main menu
 while True:
     try:
-        length = int(input("\nEnter password length (minimum 8, recommended 12+): "))
-        if length < 8:
-            print("❌ Password length should be at least 8 (recommended 12 or more)")
-            continue
-        break
-    except ValueError:
-        print("❌ Please enter a valid number")
-
-print(f'\n📋 Choose character set for password:')
-print(f'   1. Digits (0-9)')
-print(f'   2. Letters (a-z, A-Z)')
-print(f'   3. Special characters (!@#$%^&*)')
-print(f'   4. Generate Secure Password (Recommended)')
-print(f'   5. Exit')
-
-characterList = ""
-use_secure = False
-
-# Getting character set for password
-while True:
-    try:
-        choice = int(input("\n👉 Pick a number (1-5): "))
-        if choice == 1:
-            characterList += string.digits
-            print("✓ Added digits")
-        elif choice == 2:
-            characterList += string.ascii_letters
-            print("✓ Added letters")
-        elif choice == 3:
-            characterList += string.punctuation
-            print("✓ Added special characters")
-        elif choice == 4:
-            use_secure = True
-            print("✓ Using secure password generation")
-            break
-        elif choice == 5:
-            print("Exiting...")
-            exit()
-        else:
-            print("❌ Please pick a valid option (1-5)!")
-            continue
+        main_choice = int(input("\n👉 Pick an option (1-6): "))
         
-        next_choice = input("Add more character types? (y/n): ").lower()
-        if next_choice != 'y':
+        if main_choice == 1:
+            # Generate & Check Password
+            # Getting password length
+            while True:
+                try:
+                    length = int(input("\nEnter password length (minimum 8, recommended 12+): "))
+                    if length < 8:
+                        print("❌ Password length should be at least 8 (recommended 12 or more)")
+                        continue
+                    break
+                except ValueError:
+                    print("❌ Please enter a valid number")
+
+            print(f'\n📋 Choose character set for password:')
+            print(f'   1. Digits (0-9)')
+            print(f'   2. Letters (a-z, A-Z)')
+            print(f'   3. Special characters (!@#$%^&*)')
+            print(f'   4. Generate Secure Password (Recommended)')
+            print(f'   5. Exit')
+
+            characterList = ""
+            use_secure = False
+
+            # Getting character set for password
+            while True:
+                try:
+                    choice = int(input("\n👉 Pick a number (1-5): "))
+                    if choice == 1:
+                        characterList += string.digits
+                        print("✓ Added digits")
+                    elif choice == 2:
+                        characterList += string.ascii_letters
+                        print("✓ Added letters")
+                    elif choice == 3:
+                        characterList += string.punctuation
+                        print("✓ Added special characters")
+                    elif choice == 4:
+                        use_secure = True
+                        print("✓ Using secure password generation")
+                        break
+                    elif choice == 5:
+                        print("Returning to main menu...\n")
+                        break
+                    else:
+                        print("❌ Please pick a valid option (1-5)!")
+                        continue
+                    
+                    next_choice = input("Add more character types? (y/n): ").lower()
+                    if next_choice != 'y':
+                        break
+                except ValueError:
+                    print("❌ Please enter a valid number")
+
+            if use_secure:
+                password = generate_secure_password(length)
+                print("\n" + "=" * 60)
+                print("🔐 Generated Secure Password:")
+                print("=" * 60)
+                print(f"Password: {password}\n")
+            else:
+                if not characterList:
+                    print("❌ No character set selected! Using default (all characters)")
+                    characterList = string.ascii_letters + string.digits + string.punctuation
+                
+                password = []
+                for i in range(length):
+                    randomchar = random.choice(characterList)
+                    password.append(randomchar)
+                
+                password_str = "".join(password)
+                print("\n" + "=" * 60)
+                print("🔐 Generated Password:")
+                print("=" * 60)
+                print(f"Password: {password_str}\n")
+                password = password_str
+
+            strength, _ = check_strength(password)
+            validate(password)
+            
+            # Ask user if they want to save the password
+            save_choice = input("💾 Save this password? (yes/no): ").lower()
+            if save_choice == 'yes':
+                pwd_name = input("Enter a name/label for this password (e.g., Gmail, Facebook): ").strip()
+                if pwd_name:
+                    notes = input("Enter any notes (optional): ").strip()
+                    save_password(pwd_name, password, strength, notes)
+        
+        elif main_choice == 2:
+            # View Saved Passwords
+            display_saved_passwords()
+        
+        elif main_choice == 3:
+            # Search Password by Name
+            pwd_name = input("Enter the password name/label to search: ").strip()
+            view_password(pwd_name)
+        
+        elif main_choice == 4:
+            # Delete Password
+            display_saved_passwords()
+            pwd_name = input("Enter the password name/label to delete: ").strip()
+            delete_password(pwd_name)
+        
+        elif main_choice == 5:
+            # Clear All Passwords
+            clear_all_passwords()
+        
+        elif main_choice == 6:
+            # Exit
+            print("\n👋 Thank you for using Password Manager! Goodbye!\n")
             break
+        
+        else:
+            print("❌ Please pick a valid option (1-6)!")
+            continue
+    
     except ValueError:
         print("❌ Please enter a valid number")
-
-if use_secure:
-    password = generate_secure_password(length)
-    print("\n" + "=" * 60)
-    print("🔐 Generated Secure Password:")
-    print("=" * 60)
-    print(f"Password: {password}\n")
-else:
-    if not characterList:
-        print("❌ No character set selected! Using default (all characters)")
-        characterList = string.ascii_letters + string.digits + string.punctuation
-    
-    password = []
-    for i in range(length):
-        randomchar = random.choice(characterList)
-        password.append(randomchar)
-    
-    password_str = "".join(password)
-    print("\n" + "=" * 60)
-    print("🔐 Generated Password:")
-    print("=" * 60)
-    print(f"Password: {password_str}\n")
-    password = password_str
-
-validate(password)
