@@ -6,11 +6,12 @@ import tkinter.messagebox as mb
 import tkinter.ttk as ttk
 
 # Connecting to the Database
-connector = sqlite3.connect("Expense Tracker.db")
+connector = sqlite3.connect("expense_Tracker.db")
 cursor = connector.cursor()
 connector.execute(
   'CREATE TABLE IF NOT EXISTS ExpenseTracker (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, Date DATETIME, Payee TEXT, Description TEXT, Amount FLOAT, ModeOfPayment TEXT)'
 )
+
 connector.commit()
 
 # Modern Color Scheme

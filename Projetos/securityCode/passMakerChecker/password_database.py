@@ -1,14 +1,15 @@
 import sqlite3
 import os
 from datetime import datetime
+from pathlib import Path
 
-# Database file path
-DB_FILE = 'saved_passwords.db'
+BASE_DIR = Path(__file__).resolve().parent
+DATABASE_FILE = str(BASE_DIR / "saved_passwords.db")
 
 def initialize_database():
     """Create the database table if it doesn't exist"""
     try:
-        conn = sqlite3.connect(DB_FILE)
+        conn = sqlite3.connect(DATABASE_FILE)
         cursor = conn.cursor()
         
         cursor.execute('''

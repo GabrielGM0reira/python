@@ -44,6 +44,13 @@ class PasswordManagerGUI:
         self.root.resizable(True, True)
         self.root.minsize(700, 500)
         
+        # Responsive sizing variables
+        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = self.root.winfo_screenheight()
+        self.current_width = 900
+        self.current_height = 700
+        self.size_category = 'medium'
+        
         # Bind resize event for responsive layout
         self.root.bind('<Configure>', self.on_window_resize)
         
@@ -59,7 +66,54 @@ class PasswordManagerGUI:
     
     def on_window_resize(self, event=None):
         """Handle window resize for responsive layout"""
-        pass  # Responsive layouts are handled by pack/grid managers
+        if event:
+            self.current_width = event.width
+            self.current_height = event.height
+            self.update_size_category()
+    
+    def update_size_category(self):
+        """Update size category based on current window dimensions"""
+        if self.current_width < 800:
+            self.size_category = 'small'
+        elif self.current_width < 1000:
+            self.size_category = 'medium'
+        else:
+            self.size_category = 'large'
+    
+    def get_responsive_font_size(self, base_size, category=None):
+        """Calculate font size based on window size"""
+        if category is None:
+            category = self.size_category
+        
+        size_multiplier = {
+            'small': 0.85,
+            'medium': 1.0,
+            'large': 1.15
+        }
+        
+        return int(base_size * size_multiplier.get(category, 1.0))
+    
+    def get_responsive_padding(self, base_padding, category=None):
+        """Calculate padding based on window size"""
+        if category is None:
+            category = self.size_category
+        
+        padding_multiplier = {
+            'small': 0.75,
+            'medium': 1.0,
+            'large': 1.25
+        }
+        
+        return int(base_padding * padding_multiplier.get(category, 1.0))
+    
+    def get_button_columns(self):
+        """Get optimal number of button columns based on window width"""
+        if self.current_width < 750:
+            return 1
+        elif self.current_width < 950:
+            return 2
+        else:
+            return 3
     
     def center_window(self):
         """Center window on screen"""
@@ -149,8 +203,9 @@ class PasswordManagerGUI:
         self.root.grid_rowconfigure(2, weight=0)  # Footer
         self.root.grid_columnconfigure(0, weight=1)
         
-        # Modern Header with gradient effect
-        header_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=90)
+        # Modern Header with gradient effect - responsive sizing
+        header_height = 90 if self.size_category == 'large' else (80 if self.size_category == 'medium' else 70)
+        header_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=header_height)
         header_frame.grid(row=0, column=0, sticky='nsew')
         header_frame.grid_propagate(False)
         
@@ -159,18 +214,23 @@ class PasswordManagerGUI:
         accent_line.pack(fill=tk.X, side=tk.TOP)
         accent_line.pack_propagate(False)
         
-        # Header content
+        # Header content - responsive fonts
+        title_font_size = self.get_responsive_font_size(22)
+        subtitle_font_size = self.get_responsive_font_size(9)
+        title_pady = self.get_responsive_padding(10)
+        subtitle_pady = self.get_responsive_padding(8)
+        
         title_label = tk.Label(header_frame, 
                               text="🔐 PASSWORD MANAGER", 
-                              font=('Segoe UI', 22, 'bold'),
-                              bg=PRIMARY_COLOR, fg=ACCENT_COLOR, pady=10)
+                              font=('Segoe UI', title_font_size, 'bold'),
+                              bg=PRIMARY_COLOR, fg=ACCENT_COLOR, pady=title_pady)
         title_label.pack(anchor=tk.CENTER, expand=True)
         
         subtitle_label = tk.Label(header_frame, 
                                  text="Secure Password Management System",
-                                 font=('Segoe UI', 9),
+                                 font=('Segoe UI', subtitle_font_size),
                                  bg=PRIMARY_COLOR, fg=TEXT_SECONDARY)
-        subtitle_label.pack(anchor=tk.CENTER, pady=(0, 8))
+        subtitle_label.pack(anchor=tk.CENTER, pady=(0, subtitle_pady))
         
         # Main content frame with responsive layout
         content_wrapper = tk.Frame(self.root, bg=LIGHT_BG)
@@ -199,24 +259,28 @@ class PasswordManagerGUI:
         canvas.grid(row=0, column=0, sticky='nsew')
         scrollbar.grid(row=0, column=1, sticky='ns')
         
-        # Welcome card
+        # Welcome card - responsive sizing
+        welcome_padx = self.get_responsive_padding(15)
+        welcome_pady = self.get_responsive_padding(15)
+        welcome_title_font = self.get_responsive_font_size(14)
+        welcome_text_font = self.get_responsive_font_size(9)
         welcome_frame = tk.Frame(scrollable_frame, bg=CARD_BG, relief=tk.FLAT, bd=0)
-        welcome_frame.pack(fill=tk.X, padx=15, pady=(15, 5))
+        welcome_frame.pack(fill=tk.X, padx=welcome_padx, pady=(welcome_pady, welcome_pady//3))
         self.add_shadow_effect(welcome_frame)
         
         welcome_title = tk.Label(welcome_frame, 
                                 text="Welcome Back! 👋",
-                                font=('Segoe UI', 14, 'bold'),
+                                font=('Segoe UI', welcome_title_font, 'bold'),
                                 bg=CARD_BG, fg=PRIMARY_COLOR)
-        welcome_title.pack(anchor=tk.W, padx=20, pady=(15, 5))
+        welcome_title.pack(anchor=tk.W, padx=welcome_padx, pady=(welcome_pady, welcome_pady//3))
         
         welcome_text = tk.Label(welcome_frame,
                                text="Manage your passwords securely with advanced encryption",
-                               font=('Segoe UI', 9),
-                               bg=CARD_BG, fg=TEXT_SECONDARY)
-        welcome_text.pack(anchor=tk.W, padx=20, pady=(0, 15))
+                               font=('Segoe UI', welcome_text_font),
+                               bg=CARD_BG, fg=TEXT_SECONDARY, wraplength=self.current_width-40)
+        welcome_text.pack(anchor=tk.W, padx=welcome_padx, pady=(0, welcome_pady))
         
-        # Menu buttons in responsive grid (2 columns)
+        # Menu buttons in responsive grid
         buttons_frame = tk.Frame(scrollable_frame, bg=LIGHT_BG)
         buttons_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(5, 15))
         
@@ -229,13 +293,17 @@ class PasswordManagerGUI:
             ("⚠️", "Clear\nAll", self.show_clear_all, ERROR_COLOR),
         ]
         
-        # Create responsive grid (2 or 3 columns based on window width)
+        # Create responsive grid (1, 2, or 3 columns based on window width)
+        num_cols = self.get_button_columns()
+        button_padding = self.get_responsive_padding(5)
+        button_font_size = self.get_responsive_font_size(11)
+        
         for idx, (emoji, text, command, color) in enumerate(buttons_info):
-            row = idx // 2
-            col = idx % 2
+            row = idx // num_cols
+            col = idx % num_cols
             
             btn_container = tk.Frame(buttons_frame, bg=LIGHT_BG)
-            btn_container.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
+            btn_container.grid(row=row, column=col, sticky='nsew', padx=button_padding, pady=button_padding)
             buttons_frame.grid_columnconfigure(col, weight=1)
             
             # Modern card button
@@ -243,19 +311,24 @@ class PasswordManagerGUI:
             btn_card.pack(fill=tk.BOTH, expand=True)
             self.add_shadow_effect(btn_card)
             
+            btn_text_color = LIGHT_BG if color != CARD_BG else TEXT_PRIMARY
+            btn_padding_x = self.get_responsive_padding(15)
+            btn_padding_y = self.get_responsive_padding(20)
+            btn_wrap_length = 80 if num_cols > 1 else 100
+            
             btn = tk.Button(btn_card, 
                            text=f"{emoji}\n{text}",
-                           font=('Segoe UI', 11, 'bold'),
-                           bg=color, fg=LIGHT_BG if color != CARD_BG else TEXT_PRIMARY,
+                           font=('Segoe UI', button_font_size, 'bold'),
+                           bg=color, fg=btn_text_color,
                            command=command,
-                           padx=15, pady=20,
+                           padx=btn_padding_x, pady=btn_padding_y,
                            relief=tk.FLAT,
                            cursor="hand2",
                            activebackground=color,
                            activeforeground=LIGHT_BG,
                            bd=0,
                            highlightthickness=0,
-                           wraplength=80,
+                           wraplength=btn_wrap_length,
                            justify=tk.CENTER)
             btn.pack(fill=tk.BOTH, expand=True)
             
@@ -263,23 +336,27 @@ class PasswordManagerGUI:
             btn.bind('<Enter>', lambda e, b=btn, c=color: self.on_button_hover(b, c, True))
             btn.bind('<Leave>', lambda e, b=btn, c=color: self.on_button_hover(b, c, False))
         
-        # Footer frame
-        footer_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=70)
+        # Footer frame - responsive sizing
+        footer_height = 70 if self.size_category in ['medium', 'large'] else 60
+        footer_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=footer_height)
         footer_frame.grid(row=2, column=0, sticky='nsew')
         footer_frame.grid_propagate(False)
         
+        exit_btn_font = self.get_responsive_font_size(11)
+        exit_btn_padx = self.get_responsive_padding(20)
+        exit_btn_pady = self.get_responsive_padding(12)
         exit_btn = tk.Button(footer_frame, text="❌ Exit Application",
-                            font=('Segoe UI', 11, 'bold'),
+                            font=('Segoe UI', exit_btn_font, 'bold'),
                             bg=ERROR_COLOR, fg=LIGHT_BG,
                             command=self.root.quit,
-                            padx=20, pady=12,
+                            padx=exit_btn_padx, pady=exit_btn_pady,
                             relief=tk.FLAT,
                             cursor="hand2",
                             activebackground=WARNING_COLOR,
                             activeforeground=LIGHT_BG,
                             bd=0,
                             highlightthickness=0)
-        exit_btn.pack(pady=12, padx=15, fill=tk.X)
+        exit_btn.pack(pady=exit_btn_pady, padx=15, fill=tk.X)
         
         exit_btn.bind('<Enter>', lambda e, b=exit_btn: self.on_button_hover(b, ERROR_COLOR, True))
         exit_btn.bind('<Leave>', lambda e, b=exit_btn: self.on_button_hover(b, ERROR_COLOR, False))
@@ -1201,8 +1278,9 @@ class PasswordManagerGUI:
             self.show_main_menu()
     
     def create_header(self, title, color=PRIMARY_COLOR):
-        """Create modern header frame with accent color"""
-        header_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=70)
+        """Create modern header frame with accent color - responsive sizing"""
+        header_height = 70 if self.size_category == 'small' else (75 if self.size_category == 'medium' else 85)
+        header_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=header_height)
         header_frame.pack(fill=tk.X, side=tk.TOP)
         header_frame.pack_propagate(False)
         
@@ -1215,9 +1293,11 @@ class PasswordManagerGUI:
         header_content = tk.Frame(header_frame, bg=PRIMARY_COLOR)
         header_content.pack(fill=tk.BOTH, expand=True, padx=15)
         
+        header_font_size = self.get_responsive_font_size(18)
+        header_pady = self.get_responsive_padding(12)
         title_label = tk.Label(header_content, text=title,
-                              font=('Segoe UI', 18, 'bold'),
-                              bg=PRIMARY_COLOR, fg=color, pady=12)
+                              font=('Segoe UI', header_font_size, 'bold'),
+                              bg=PRIMARY_COLOR, fg=color, pady=header_pady)
         title_label.pack(anchor=tk.CENTER)
 
 
