@@ -20,8 +20,30 @@ def get_weather(latitude, longitude):
     except requests.exceptions.JSONDecodeError as e:
         print(f"Error decoding JSON response: {e}")
         return None
+    
+# Get 7 day forecast
+def get_forecast(latitude, longitude):
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": "temperature_2m_max,temperature_2m_min,weather_code",
+        "forecast_days": 7,
+        "timezone": "auto",
+    }
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching forecast data: {e}")
+        return None
+    except requests.exceptions.JSONDecodeError as e:
+        print(f"Error decoding JSON response: {e}")
+        return None
 
-# Weather desscription
+# Weather description
 def get_weather_description(code):
     if code == 0:
         return "Clear sky"
